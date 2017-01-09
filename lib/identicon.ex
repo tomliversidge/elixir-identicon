@@ -1,14 +1,28 @@
 defmodule Identicon do
+  use GenServer
 
-  def generate(input) do
-    input
+  def generate(words) do
+    Enum.each words, fn(word) ->
+      GenServer.start(Identicon, word)
+    end
+  end
+
+  def init(word) do
+    GenServer.cast(self, {:generate, word})
+    {:ok, word}
+  end
+
+  def handle_cast({:generate, word}, words) do
+    Process.sleep(:rand.uniform(5000))
+    word
     |> hash
     |> pick_color
     |> build_grid
     |> filter_odd_squares
     |> build_pixel_map
     |> draw_image
-    |> save(input)
+    |> save(word)
+    {:noreply, {}}
   end
 
   def hash(input) do
@@ -65,6 +79,7 @@ defmodule Identicon do
   end
 
   def save(binary, filename) do
+    IO.puts "Saving #{filename}.png"
     File.write("#{filename}.png", binary)
   end
 end
