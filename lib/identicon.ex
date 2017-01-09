@@ -1,19 +1,13 @@
 defmodule Identicon do
-  use GenServer
 
   def generate(words) do
     Enum.each words, fn(word) ->
-      GenServer.start(Identicon, word)
+      Task.start(Identicon, :do_generate, [word])
     end
   end
 
-  def init(word) do
-    GenServer.cast(self, {:generate, word})
-    {:ok, word}
-  end
-
-  def handle_cast({:generate, word}, words) do
-    Process.sleep(:rand.uniform(5000))
+  def do_generate(word) do
+    Process.sleep(:rand.uniform(1000))
     word
     |> hash
     |> pick_color
